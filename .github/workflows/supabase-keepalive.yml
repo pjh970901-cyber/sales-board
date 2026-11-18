@@ -1,0 +1,48 @@
+# Supabase 가 저절로 멈추지 않게 지켜본다 (신사업팀 판매 현황, 2026-11-18).
+#
+# 무료 요금제는 7일 동안 아무도 안 쓰면 프로젝트를 자동으로 일시중지한다.
+# 평일엔 수집 PC 가 매일 자료를 올리지만, 연휴 · 휴가로 PC 가 일주일 넘게 꺼지면 멈출 수 있다.
+#
+# 여기서 하는 일은 월 · 목 아침에 ping() 함수를 한 번 부르는 것뿐이다('ok' 만 돌려줌, 표는 안 읽음).
+# 판매 표는 로그인한 사람만 읽게 잠겨 있어, 공개용 키로는 이 함수 말고는 아무것도 열리지 않는다.
+#
+# 응답이 없으면 이 작업이 실패하고 GitHub 이 메일을 보낸다.
+
+name: Supabase 깨어 있게 두기
+
+on:
+  schedule:
+    # GitHub 의 시간은 UTC 다. 00:00 UTC = 한국 오전 9시. 월 · 목 — 사이가 3일 · 4일이라 7일 한도에 넉넉히 못 미친다.
+    - cron: '0 0 * * 1,4'
+  workflow_dispatch:        # 필요하면 Actions 탭에서 손으로도 돌릴 수 있다
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supabase ping() 부르기
+        env:
+          # 페이지의 config.json 에 이미 들어 있는 공개 값이다(브라우저가 직접 쓰는 공개 키). 새로 드러나는 것이 없어 비밀로 감추지 않았다.
+          # 공개 키를 바꾸게 되면 config.json 과 이 줄을 같이 고쳐야 한다.
+          SUPABASE_URL: 'https://ubougykfgtvnuttoqgbi.supabase.co'
+          SUPABASE_KEY: 'sb_publishable_copV_XFwW1rMPS9aE84N7A_TYeObWrx'
+        run: |
+          set -uo pipefail
+          URL="$SUPABASE_URL/rest/v1/rpc/ping"
+          # 한 번 실패했다고 바로 메일을 보내면 잠깐 끊긴 것까지 경보가 된다. 30초 간격으로 세 번까지 본다.
+          for attempt in 1 2 3; do
+            code=$(curl -sS -o /tmp/resp.json -w '%{http_code}' --max-time 30 -X POST \
+                     -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" -H "Content-Type: application/json" \
+                     -d '{}' "$URL" || echo "000")
+            echo "$attempt번째 — HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "응답 내용: $(cat /tmp/resp.json)"
+              echo "✔ Supabase 정상 — 다음 실행까지 멈추지 않는다"
+              exit 0
+            fi
+            [ "$attempt" -lt 3 ] && sleep 30
+          done
+          echo "::error::Supabase 가 응답하지 않습니다 (마지막 HTTP $code)."
+          echo "::error::supabase.com 에서 signage-dashboard 프로젝트가 일시중지(paused)됐는지 확인하고, 그렇다면 Resume 을 누르세요."
+          cat /tmp/resp.json || true
+          exit 1
