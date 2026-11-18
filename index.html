@@ -2238,7 +2238,7 @@ function svBar(r) {
 }
 function renderStockView() {
   const rows = svRows(), seg = `<div class="sv-top">${prodViewSeg()}</div>`;
-  if (!rows) { $("#page").innerHTML = `<div class="sv">${seg}<p class="ov-empty">아직 올라온 재고가 없습니다. 자동 수집(매일 16:30~17:50)이 돌면 이카운트 재고가 함께 올라옵니다.</p></div>`; return; }
+  if (!rows) { $("#page").innerHTML = `<div class="sv">${seg}<p class="ov-empty">아직 올라온 재고가 없습니다. 자동 수집(매일 16:00~17:50)이 돌면 이카운트 재고가 함께 올라옵니다.</p></div>`; return; }
   const cats = ["전체", ...new Set(rows.map((r) => r.cat).filter(Boolean))];
   if (!cats.includes(S.svCat)) S.svCat = "전체";
   const list = rows.filter((r) => S.svCat === "전체" || r.cat === S.svCat)
