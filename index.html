@@ -3384,6 +3384,16 @@ setTimeout(() => {
   // 데이터·설정이 바뀌어 자동으로 새로고침됐을 때는 보던 위치로 돌아갑니다
   try { const y = Number(sessionStorage.getItem("reloadY")); sessionStorage.removeItem("reloadY"); if (y > 0) window.scrollTo({ top: y }); } catch {}
 }, 600);
+/* 자동 새로 고침(2026-11-19 사용자 "날짜가 11/18 로 남아 있음 — 자동으로 가게"): 숫자는 페이지를 열 때만 받아 오므로,
+   열어 둔 탭이 오래되면 새 자료를 다시 받습니다. ① 다른 창 · 탭에 있다가 돌아왔을 때 10분 넘게 지났으면 ② 화면을 보고 있어도 30분마다.
+   목표 입력 중(저장 안 한 값)이거나 설정 서랍이 열려 있으면 미룹니다. 고른 탭 · 기간은 주소에 남아 그대로 열립니다. */
+(function () {
+  const t0 = Date.now(), MIN = 60 * 1000;
+  const busy = () => S.settings || (typeof GL !== "undefined" && GL.dirty) || !!document.querySelector(".drawer.open");
+  const reload = () => { try { sessionStorage.setItem("reloadY", String(window.scrollY || 0)); } catch {} location.reload(); };
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Date.now() - t0 > 10 * MIN && !busy()) reload(); });
+  setInterval(() => { if (document.visibilityState === "visible" && Date.now() - t0 > 30 * MIN && !busy()) reload(); }, MIN);
+})();
 </script>
 </body>
 </html>
