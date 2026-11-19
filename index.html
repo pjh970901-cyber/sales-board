@@ -2664,8 +2664,7 @@ function renderData(target = $("#page")) {
   target.innerHTML = `<p class="note">잘못 올렸다면 아래 올리기 기록·기준정보에서 복원할 수 있습니다</p><div class="cards">
     <section class="card"><div class="card-head"><h2 class="card-title">수집 상태</h2></div><p class="card-sub">매일 16:00~17:50 자동 수집(이 PC) · 엑셀 올리기는 예비</p>
       <div class="status-list"><div class="status-row"><i class="ph ph-clock ic-mute" aria-hidden="true"></i><div><div class="t">마지막 수집 시각</div><div class="s">${esc(window.META.collectedAt?.replace("T", " ") || "아직 없음")}</div></div></div><div class="status-row"><i class="ph ph-upload-simple ic-mute" aria-hidden="true"></i><div><div class="t">마지막 올리기</div><div class="s" id="lastImport">기록을 읽는 중…</div></div></div></div></section>
-    <section class="card" id="secUpload" tabindex="-1"><div class="card-head"><div><h2 class="card-title">자료 올리기</h2><p class="card-sub">이카운트 판매현황을 같은 조건으로 받아 올리세요 (PC 브라우저)</p></div></div><p class="note" id="masterNotice"></p>
-      <label class="drop" id="drop" for="fileIn"><i class="ph ph-upload-simple" aria-hidden="true"></i><strong>판매현황 엑셀을 여기에 끌어다 놓기</strong><span>주문자·수취인 이름은 이 브라우저에서 지운 뒤 보냅니다</span><input id="fileIn" type="file" accept=".xlsx" class="sr-only"></label><p class="note"><i class="ph ph-shield-check" aria-hidden="true"></i><span>올리기 전에 바꿀 기간과 기존·새 줄 수를 보여주고 확인을 받습니다.</span></p></section>
+    <!-- 2026-11-19 판매현황 엑셀 올리기 칸은 뺌(사용자). 판매는 자동 수집, 실패한 날은 이 PC 에서 수집기를 다시 돌림. 기준정보 엑셀 · 올리기 기록은 남김 -->
     ${window.SalesUpload?.dataCards() ?? ''}
     <section class="card"><div class="card-head"><h2 class="card-title">올리기 기록</h2></div><div id="uploadHistory" role="status">기록을 읽는 중…</div></section>
   </div>`;
