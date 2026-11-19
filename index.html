@@ -617,7 +617,7 @@ function ksCalc(o) {
   const tgM = (i) => { if (!g) return null; let s = 0, any = false; for (const v of Object.values(g)) if (v?.[i] != null) { s += v[i]; any = true; } return any ? s * 10000 : null; };
   const m0 = monthStart(o), m1 = monthEnd(o), wd = [];
   for (let x = m0; x <= m1; x++) if (ksWork(x)) wd.push(x);
-  const wdDone = wd.filter((x) => x <= o).length;
+  const calDone = (o - m0 + 1) / (m1 - m0 + 1); // 기대 진도 = 달력일(지난 날짜 ÷ 그 달 날 수) — 2팀 화면 · 이 화면의 다른 곳과 같게(2026-11-19 사용자)
   // 월
   const pm1 = m0 - 1, pm0 = monthStart(pm1), dd = dt.getUTCDate();
   const slipIn = (a, b) => D.slipDays.filter((x) => x >= a && x <= b);
@@ -626,7 +626,7 @@ function ksCalc(o) {
   if (prevDays.length && FIRST_DAY <= pm0 + 6) { mPrev = ksSum(pm0, Math.min(pm0 + dd - 1, pm1)); mNote = `${offDate(pm0).getUTCMonth() + 1}/1~${md(Math.min(pm0 + dd - 1, pm1))}`; }
   else if (prevDays.length && curDays.length) { mPrev = (ksSum(pm0, pm1) / prevDays.length) * curDays.length; mNote = `${offDate(pm0).getUTCMonth() + 1}월`; /* 계산 방식(하루 평균)은 화면에 적지 않음(2026-11-19 사용자) */ }
   const mT = tgM(mi);
-  const month = { name: "월매출", cmp: "전월비", range: `${md(m0)}~${md(o)}`, target: mT, actual: ksSum(m0, o), prev: mPrev, note: mNote, pace: wd.length ? wdDone / wd.length : null };
+  const month = { name: "월매출", cmp: "전월비", range: `${md(m0)}~${md(o)}`, target: mT, actual: ksSum(m0, o), prev: mPrev, note: mNote, pace: calDone };
   // 일
   const day = { name: "일매출", cmp: "전주비", range: `${md(o)}(${DOW[dowOf(o)]})`, target: mT != null && wd.length && ksWork(o) ? mT / wd.length : null, actual: ksDay()[o] || 0, prev: o - 7 >= FIRST_DAY ? ksDay()[o - 7] || 0 : null, note: `${md(o - 7)}(${DOW[dowOf(o - 7)]}) ${ksMoney(ksDay()[o - 7] || 0)}` };
   // 연
@@ -634,7 +634,7 @@ function ksCalc(o) {
   const empty = g ? Array.from({ length: 12 }, (_, i) => i + 1).filter((m) => tgM(m - 1) == null) : [];
   const py0 = dateOff(y - 1, 0, 1), hasPrevYear = FIRST_DAY <= py0 + 6;
   const year = { name: "연매출", cmp: "전년비", range: `${y}년 1/1~${md(o)}`, target: yT || null, actual: ksSum(Math.max(y0, 0), o), prev: hasPrevYear ? ksSum(py0, dateOff(y - 1, mi, dd)) : null, note: hasPrevYear ? "작년 같은 날까지" : "작년 자료 없음",
-    part: FIRST_DAY > y0 + 6 ? md(FIRST_DAY) : null, pace: wd.length ? (mi + wdDone / wd.length) / 12 : null, tnote: empty.length ? `${empty.length > 3 ? empty.length + "달" : empty.map((m) => m + "월").join(" · ")} 목표 없음` : "" }; // 계산식(12달 합 · ÷ 영업일)은 숨김(2026-11-19 사용자)
+    part: FIRST_DAY > y0 + 6 ? md(FIRST_DAY) : null, pace: (mi + calDone) / 12, tnote: empty.length ? `${empty.length > 3 ? empty.length + "달" : empty.map((m) => m + "월").join(" · ")} 목표 없음` : "" }; // 계산식(12달 합 · ÷ 영업일)은 숨김(2026-11-19 사용자)
   return [year, month, day];
 }
 function ksMoney(v) { return manLong(v) + "원"; }
@@ -1375,7 +1375,9 @@ function ovPeriod(u = S.ovUnit, dt = S.ovDate) {
   const what = u === "d" ? "전주 같은 요일" : u === "w" ? "그 전주" : u === "m" ? (latest ? "지난달" : "그 전달") : latest ? "지난해" : "그 전해";
   let prev = null, note;
   if (q1 < FIRST_DAY) note = `비교 없음(${what} 자료 없음 · 자료 ${md(FIRST_DAY)}부터)`;
-  else if (pa < FIRST_DAY) { // 견줄 구간의 앞쪽 자료가 없음 → 자료가 있는 구간 전체와 견줌
+  else if (pa < FIRST_DAY && FIRST_DAY > pa + 6) { // 견줄 구간의 앞쪽 자료가 없음 → 자료가 있는 구간 전체와 견줌
+    // 2026-11-19 고침: 앞쪽 6일 안의 빈 날(신정 연휴 등 판매 없는 날)은 자료가 있는 것으로 봄 — 요약 카드(ksCalc)와 같은 규칙.
+    // 전엔 작년 자료가 1/6부터라 '작년 전체'와 견줘 전년비가 카드(작년 같은 날까지)와 달랐음
     prev = { a: FIRST_DAY, b: q1, name, part: true }; prev.days = ovCount(prev.a, prev.b);
     note = `비교 ${what} 자료가 있는 구간 ${ovRange(prev.a, prev.b)}(자료 ${md(FIRST_DAY)}부터 · 판매일 ${prev.days}일, 고른 기간 ${cur.days}일)`;
   } else { prev = { a: pa, b: pb, name, part: false }; prev.days = ovCount(pa, pb); note = `비교 ${rule} ${ovRange(pa, pb)}`; }
@@ -1763,7 +1765,7 @@ function renderMk() {
       <span class="ma-kv"><span>매출 비중</span>${dmShare(x.share)}<b>${x.share}%</b></span>
       ${x.prog != null ? `<span class="ma-kv"><span>목표 달성</span>${dmProg(x.prog, exp)}<b>${x.prog}%</b></span><span class="ma-kv two"><span>월 목표 ${esc(ovWon(x.target))}</span>${dmProgWord(x.prog, exp)}</span>` : `<span class="ma-kv two muted"><span>목표 달성</span><span>${noTgt}</span></span>`}
       <span class="ma-kv two"><span>${prevName ? esc(prevName) + " 대비" : "이전 기간 대비"}</span>${dmDelta(x.cur.rev, P.prev ? x.prev.rev : null)}</span>
-      <span class="ma-kv two"><span>전일 대비${lastLbl ? ` <small>${lastLbl} ${esc(ovWon(x.dLast || 0))}</small>` : ""}</span>${dmDelta(x.dLast, x.dPrev)}</span>
+      <span class="ma-kv two"><span>전일${X.prevD != null ? `(${md(X.prevD)})` : ""} 대비${lastLbl ? ` <small>${lastLbl} ${esc(ovWon(x.dLast || 0))}</small>` : ""}</span>${dmDelta(x.dLast, x.dPrev)}</span>
       ${maSpark(X.list.length ? x.line.cur : [])}<span class="ma-cap">${P.u === "y" ? "월별" : "판매일별"} 매출 · ${esc(P.cur.label)}</span></button>`;
   $("#page").innerHTML = `<div class="ma">
     <p class="ma-cond"><b class="k">전체</b><b>${esc(ovWon(X.all.cur.rev))}</b> · ${nf.format(X.all.cur.qty)}대${tgtTxt}${P.prev ? ` · ${esc(prevName)} 대비 ${dmDelta(X.all.cur.rev, X.all.prev.rev)}` : ""}</p>
