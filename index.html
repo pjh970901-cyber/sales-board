@@ -4401,7 +4401,13 @@ document.addEventListener("click", (e) => {
     keepTableScroll(render); const nb = $(`[data-tsort="${t.dataset.tsort}"]`); if (nb) nb.focus({ preventScroll: true }); return;
   }
   if (t.matches("[data-close]")) return closeSheet();
-  if (t.dataset.go) return go(t.dataset.go);
+  if (t.dataset.go) {
+    // 2026-11-20 사용자 '탭 누르면 새로고침되게': 옆 메뉴 · 아래 탭 막대에서 누르면 새 자료를 다시 받음(고른 파트 · 날짜는 주소로 유지). 목표 입력 중이면 미룸
+    const nav = t.closest("#sideNav, #tabBar");
+    go(t.dataset.go);
+    if (nav && !GL.dirty && performance.now() > 60_000) reloadView(); // 연 지 1분 안에 다시 누르면 받아 둔 자료 그대로(연달아 누를 때 매번 받지 않게)
+    return;
+  }
   if (t.dataset.mode) { S.mode = t.dataset.mode; if (S.mode === "month") S.base = "done"; S.pairA = S.pairB = null; return render(); }
   if (t.dataset.metric) { S.metric = t.dataset.metric; return render(); }
   if (t.dataset.cunit) { S.mode = t.dataset.cunit; if (S.mode === "month") S.base = "done"; S.pairA = S.pairB = null; render(); const b = $(`[data-cunit="${S.mode}"]`); if (b) b.focus({ preventScroll: true }); return; }
