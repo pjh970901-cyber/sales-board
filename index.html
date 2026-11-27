@@ -3639,8 +3639,8 @@ function t1Calc(o) {
       const cur = tmSum(P.cur.a, P.cur.b).rev, prev = P.prev ? tmSum(P.prev.a, P.prev.b).rev : null;
       const G = u === "d" ? null : tmGoal(S.part, u, y, u === "m" ? mo : u === "q" ? Math.floor(mo / 3) : 0);
       // 파트 '전체'에 목표가 일부 파트만 있으면 진척률 분자도 목표가 있는 파트의 매출만(분자 · 분모 같은 범위 — 규칙은 사용자 확인 전 임시, 2026-11-20 검토)
-      // 전체: 목표가 있는 파트(기타는 늘 빠짐, 2026-11-24)의 매출만 분자로
-      const num = G && G.t != null && S.part === "all" ? GOAL_PARTS.filter((x) => !G.missing.includes(x)).reduce((s, x) => s + tmSum(P.cur.a, P.cur.b, { part: x }).rev, 0) : cur;
+      // 전체: 기타 매출도 분자에 넣음(2026-11-27 사용자 '기타도 포함'), 목표 미입력 파트(사이니지 · 노트북·PC)만 뺌
+      const num = G && G.t != null && S.part === "all" ? cur - G.missing.reduce((s, x) => s + tmSum(P.cur.a, P.cur.b, { part: x }).rev, 0) : cur;
       const e = u === "d" ? null : tmExpect(P), p = G && G.t > 0 ? num / G.t : null;
       return { u, P, cur, prev, g: tmGrowth(cur, prev, P), G, e, p, num };
     });
@@ -3677,7 +3677,7 @@ function t1Goal(r) {
 function t1Prog(r) {
   if (r.p == null) return `<span class="t1-na">—</span>`;
   const ahead = r.p >= r.e;
-  return `<div class="t1-pg">${t1Bar(r)}<span class="t1-pv"><b class="${ahead ? "ahead" : "behind"}">${t1Pct(r.p)}</b><small>기대 ${t1Pct(r.e)}</small>${r.G.part ? `<small class="t1-pnote">목표 있는 파트만</small>` : S.part === "all" ? `<small class="t1-pnote">기타 제외</small>` : ""}</span></div>`;
+  return `<div class="t1-pg">${t1Bar(r)}<span class="t1-pv"><b class="${ahead ? "ahead" : "behind"}">${t1Pct(r.p)}</b><small>기대 ${t1Pct(r.e)}</small>${r.G.part ? `<small class="t1-pnote">목표 있는 파트만</small>` : ""}</span></div>`;
 }
 // 비교가 없을 때는 이유(…자료 없음)를 비교 칸 아래에, 그 밖의 안내(일부만 · 빈 달)는 성장률 아래에 — 같은 말을 두 번 쓰지 않음
 const t1NoCmp = (r) => { const n = r.P.notes.find((x) => x.startsWith("비교 없음(")); return n ? n.slice(6, -1) : r.P.notes.includes("자료 없음") ? "자료 없음" : ""; };
