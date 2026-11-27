@@ -4112,7 +4112,6 @@ function openT3Pop(ki) {
   openSheet(html);
   $("#sheet").classList.add("t3p-sheet");
 }
-const T3_FOOT = "매출 = 판매금액(반품 차감, 부속 · 렌탈 · 설치 포함) · 비중 = 6마켓 합 대비 · 시트 밖 거래처: 사이니지 → 도매,견적, 이부장님 파트 → 기업 · 기타 · 대수에 부속 · 서비스 제외(서비스는 건) · 비교: 일 = 전 판매일, 주 = 전주(진행 중이면 같은 요일까지), 월 · 분기 · 연 = 전년 같은 날짜까지, 고른 기간 = 작년 같은 기간 · 'N배' 표기는 임시";
 // A: 비중 띠 + 색칠 표 + 표 아래 TOP 10
 function renderT3A(o, X) {
   const R = tmRng(), u = R ? "r" : S.t3Unit, C = t3Cols(o, u, R), yr = u === "y", cols = yr ? [] : C.cols, n = cols.length, P = X.P;
@@ -4148,7 +4147,6 @@ function renderT3A(o, X) {
         <tbody>${rows}${tot}</tbody></table></div>
     </section>
     ${t3TopCard(X, o, true)}
-    <p class="ov-foot t3-foot">${esc(TM_PART_NAMES[S.part])} 기준 · ${T3_FOOT}</p>
   </div>`;
   // 처음 위치는 맨 왼쪽: 고른 기간의 매출 · 대수 · 비중 · 증감 · 전년비 네 칸이 늘 먼저 보이게(2026-11-20 점검 — 끝으로 밀면 이 칸들이 왼쪽 밖으로 사라졌음).
   // 고른 기간의 월 칸은 왼쪽 '매출' 칸과 같은 값이라 밀어서 보여 줄 까닭이 없음. 월별 칸은 옆으로 밀어 봄
