@@ -2507,7 +2507,6 @@ function t4StockHTML() {
       ${svTools(V)}
       <div class="t4-tw sv-tw" tabindex="0" role="region" aria-labelledby="t4SvT">${svTable(V)}</div>
     </section>
-    <p class="ov-foot t4-foot">${svFoot()}</p>
   </div>`;
 }
 function svAct(t) {
@@ -3830,7 +3829,6 @@ function renderT1() {
         <div><span class="t1-cap">${esc(C.month.title)}</span><div class="t1-plot" id="t1Plot2" role="img" aria-label="${esc(C.month.title)}"></div></div></div>`
       : `<div class="t1-plot" id="t1Plot" role="img" aria-label="${esc(`${C.title}. ${T1_NAME[u]} ${t1Label(sel)} 매출 ${ovWon(sel.cur)}${C.kind === "cum" ? `, 작년 같은 날짜까지 ${C.same == null ? (C.noLy || "비교 없음") : ovWon(C.same)}${C.full != null ? `, 작년 연간 ${ovWon(C.full)}` : ""}` : ""}`)}"></div>`}
     </section>
-    <p class="ov-foot t1-foot">${esc(TM_PART_NAMES[S.part])} 기준 · 매출 = 이카운트 판매금액(반품 차감, 부속 · 렌탈 · 설치 금액 포함) · 전체 = 사이니지 + 노트북 · PC + 기타 · 진행 중인 기간의 전년은 같은 날짜까지 · 기대 진도 = 지난 날 ÷ 기간 날 수 · 목표는 입력한 값만(기타는 목표 없음 · 전체 진척은 기타 매출 빼고) · 1,000% 넘는 성장률은 'N배'로 임시 표기(표기 규칙 미정)</p>
   </div>`;
   t1Draw();
   requestAnimationFrame(t1Draw); // 칸 높이가 정해진 뒤 다시
@@ -3942,7 +3940,6 @@ function renderT2A(o) {
         <thead><tr><th scope="col">모델 · 묶음</th>${yr ? "" : cols.map((c) => `<th scope="col" class="r${c.on ? " on t2-now" : ""}${c.fut ? " fut" : ""}" title="${esc(c.tip)}${c.fut ? " · 아직 안 옴" : ""}${c.on ? " · 기준일" : ""}">${esc(c.label)}</th>`).join("")}<th scope="col" class="r t2-tot">${yr ? `${offDate(o).getUTCFullYear()}년 합계` : "합계"}</th><th scope="col" class="r t2-rev">매출</th></tr></thead>
         ${body}</table></div>
     </section>
-    <p class="ov-foot t2-foot">${R ? T2_FOOT.replace("올해 자료만(1/1~기준일)", `고른 기간(${tmRngLabel(R.a, R.b)})만`) : T2_FOOT} · 매출 = 그 줄의 판매금액 · 칸 색 = 같은 단위 안에서 수량 5단계</p>
   </div>`;
   // 표가 카드보다 넓으면(휴대폰 · 일별) 기준일 칸이 보이게 옆으로 밀어 둠
   // 합계 칸은 오른쪽에 붙어 있으니 그 폭을 빼고 기준일 칸을 남은 자리 오른쪽 가까이에 둠
@@ -4106,8 +4103,7 @@ function openT3Pop(ki) {
       <p class="t3p-sub">${esc(t3PeriodName(P))} · ${esc(t3CmpName(P))}</p>
       <dl class="t3p-kv">${kv("이번 대수", `${t3dN(cq)}${U}`)}${kv(P.prev ? P.prev.name : "비교", pq == null ? "—" : `${t3dN(pq)}${U}`, dl)}${kv("매출", esc(ovWon(c.rev)))}${kv("평균 단가", cq > 0 && !k.svc ? esc(ovWon(c.rev / cq)) : "—")}${kv("반품", c.ret ? `${t3dN(c.ret)}${U}` : "없음")}</dl>
       <section class="t3p-sec"><h3>${esc(name)} ${colWord} 대수 <small>${esc(span)} · 노란 칸 = 기준일</small></h3><ol class="t3p-bars">${bars}</ol></section>
-      ${t3PopAccts(P, ki, name, f, U)}
-      <p class="t3p-foot">부속 제외 · 매출 = 판매금액(반품 차감) · 서비스는 건</p>`;
+      ${t3PopAccts(P, ki, name, f, U)}`;
   });
   openSheet(html);
   $("#sheet").classList.add("t3p-sheet");
@@ -4346,7 +4342,6 @@ function renderT4A(X) {
       </section>
       ${t4AcctCard(X)}
     </div>
-    ${t4Foot(X)}
   </div>`;
   if (t4Hi) { const hi = $("#page .t4-hi"); t4Hi = null; hi?.scrollIntoView?.({ block: "nearest" }); }
   // 표가 카드보다 넓으면(일 · 주 · 좁은 화면) 가장 오래된 기간 칸부터 숨김 — 옆으로 밀면 고정 첫 칸 밑에 숫자가 반쯤 걸려서. 휴대폰은 옆으로 밀기 그대로
